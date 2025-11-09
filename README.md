@@ -1,3 +1,11 @@
+## Important Information
+
+Your support in the ongoing development of this library would be sincerely appreciated. 🙂
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/mazuralbert)
+
+_**The library is in beta requires testing and monitoring.**_
+
 # portal-auth
 
 portal-auth is an authentication module for dashboard 2, 
