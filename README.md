@@ -4,98 +4,74 @@ Your support in the ongoing development of this library would be sincerely appre
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%23FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/mazuralbert)
 
-_**The library is in beta requires testing and monitoring.**_
-
 # portal-auth
 
-portal-auth is an authentication module for dashboard 2, 
-designed specifically for Portal, the instance manager for Node-RED
+portal-auth is an authentication module for Dashboard 2.0,
+designed specifically for Portal, the instance manager for Node-RED.
 
-# setup
-The module is prepared to work with subdomains and passes cookies accordingly.
+## How it works
 
-To connect to the external application with users, you must create an endpoint at `http://yourportal/auth-endpoint` that returns object with `username` and optional user permissions. Make sure to check the `portal-perms-key` header in the incoming request and verify that it matches your configured key `PORTAL_PERMS_KEY=SECRETKEY`. If the key does not match, the endpoint should return an appropriate error response (e.g., HTTP 403 Forbidden).
+Authentication is handled by the Nginx reverse proxy that sits in front of Node-RED. Nginx verifies the user session and injects `X-Portal-*` headers into every request (including WebSocket upgrade). This plugin reads those headers and populates `msg._client` with user identity and group permissions.
 
-### node-red .env file
-```env
-PORTAL_PERMS_URL=http://yourportal/auth-endpoint
-PORTAL_PERMS_KEY=SECRETKEY
+No middleware configuration or environment variables are needed in Node-RED.
+
+### Portal headers injected by Nginx
+
+| Header | Type | Description |
+|---|---|---|
+| `X-Portal-User-Id` | string | Unique user ID |
+| `X-Portal-User-Name` | string | Display name |
+| `X-Portal-User-Username` | string | Login username |
+| `X-Portal-User-Email` | string | Email |
+| `X-Portal-User-Role` | string | `"admin"` or `"user"` |
+| `X-Portal-User-Groups` | JSON string | Groups with link permissions |
+
+### X-Portal-User-Groups format
+
+```json
+[
+  {
+    "id": "group-uuid-1",
+    "name": "Dashboards",
+    "links": ["link-uuid-1", "link-uuid-2"]
+  }
+]
 ```
 
-### beta node-red settings.js dashboard middlewares config
-```js
-  // beta
-  // todo find better solution for display error on client. Now is "There was an error loading the Dashboard.".
-  // todo remove console logs
-  dashboard: {
-    path: "dashboard",
-    middleware: async (req, res, next) => {
-      console.log("middleware request");
+- **Admin** — receives all groups and all links
+- **User** — receives only groups/links they have permission for
+- **Empty `[]`** — user has no link permissions
 
-      const cookies = req.headers.cookie;
-      if (!cookies) {
-        return res.status(403).send("Authorization Required");
-      }
+### msg._client structure
 
-      try {
-        let perms = null;
+After processing by the plugin, each message contains:
 
-        const response = await fetch(process.env.PORTAL_PERMS_URL, {
-          method: "GET",
-          headers: {
-            Cookie: cookies,
-            "portal-perms-key": process.env.PORTAL_PERMS_KEY || "DEFAULTKEY",
-          },
-        });
-
-        perms = await response.json();
-        const isUser = perms !== null && perms.hasOwnProperty("username");
-
-        if (!isUser) {
-          return res.status(403).send("Authorization Required");
-        }
-
-        res.portal = perms;
-        next();
-      } catch (error) {
-        return res.status(403).send("Authorization Required");
-      }
-    },
-
-    ioMiddleware: [
-      async (socket, next) => {
-        console.log("ioMiddleware request");
-
-        const cookies = socket.handshake.headers.cookie;
-        if (!cookies) {
-          next(new Error("Authorization Required"));
-        }
-
-        try {
-          let perms = null;
-
-          const response = await fetch(process.env.PORTAL_PERMS_URL, {
-            method: "GET",
-            headers: {
-              Cookie: cookies,
-              "portal-perms-key": process.env.PORTAL_PERMS_KEY || "DEFAULTKEY",
-            },
-          });
-
-          perms = await response.json();
-          const isUser = perms !== null && perms.hasOwnProperty("username");
-
-          if (!isUser) {
-            next(new Error("Authorization Required"));
-            return;
-          }
-
-          socket.handshake.portal = perms;
-          next();
-        } catch (error) {
-          next(new Error("Authorization Required"));
-        }
-      },
-    ],
-  },
+```json
+{
+  "socketId": "abc123",
+  "portalUserId": "cm5abc123...",
+  "portalUserName": "Jan Kowalski",
+  "portalUsername": "jkowalski",
+  "portalUserEmail": "jan@example.com",
+  "portalUserRole": "admin",
+  "portalGroups": [
+    {
+      "id": "group-uuid",
+      "name": "Dashboards",
+      "links": ["link-uuid-1"]
+    }
+  ]
+}
 ```
+
+## Install
+
+```bash
+npm install @aaqu/node-red-dashboard-2-portal-auth
+```
+
+## Notes
+
+- Headers are set per-request by Nginx after session verification
+- If the session expires, Nginx returns 401 and redirects to `/auth/login`
+- `X-Portal-*` headers cannot be spoofed externally — Nginx overwrites them with values from verify-proxy
