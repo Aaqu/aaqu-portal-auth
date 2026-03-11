@@ -67,7 +67,7 @@ After processing by the plugin, each message contains:
 ## Install
 
 ```bash
-npm install @aaqu/node-red-dashboard-2-portal-auth
+npm install @aaqu/node-red-dashboard-2-fromcubes-portal-auth
 ```
 
 ## Notes
@@ -75,3 +75,8 @@ npm install @aaqu/node-red-dashboard-2-portal-auth
 - Headers are set per-request by Nginx after session verification
 - If the session expires, Nginx returns 401 and redirects to `/auth/login`
 - `X-Portal-*` headers cannot be spoofed externally — Nginx overwrites them with values from verify-proxy
+
+## Changelog
+
+- **1.0.1** (2026-03-12) — Renamed package to `@aaqu/node-red-dashboard-2-fromcubes-portal-auth`.
+- **1.0.0** (2026-03-12) — Complete rewrite. Replaced cookie-based auth endpoint approach with Nginx `X-Portal-*` headers. Removed `onSetup` hook and middleware/env configuration.

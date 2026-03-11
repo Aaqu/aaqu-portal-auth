@@ -1,8 +1,9 @@
 {
-  "name": "@aaqu/node-red-dashboard-2-portal-auth",
-  "version": "1.0.0",
+  "name": "@aaqu/node-red-dashboard-2-fromcubes-portal-auth",
+  "version": "1.0.1",
   "description": "portal-auth is an authentication module for dashboard 2, designed specifically for Portal, the instance manager for Node-RED",
   "keywords": [
+    "fromcubes",
     "portal",
     "aaqu",
     "auth",
@@ -22,7 +23,7 @@
   },
   "node-red": {
     "plugins": {
-      "node-red-dashboard-2-portal-auth": "index.js"
+      "node-red-dashboard-2-fromcubes-portal-auth": "index.js"
     }
   },
   "license": "Apache-2.0",

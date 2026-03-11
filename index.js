@@ -8,7 +8,7 @@
 */
 
 module.exports = function (RED) {
-  RED.plugins.registerPlugin("node-red-dashboard-2-portal-auth", {
+  RED.plugins.registerPlugin("node-red-dashboard-2-fromcubes-portal-auth", {
     type: "node-red-dashboard-2",
 
     hooks: {
