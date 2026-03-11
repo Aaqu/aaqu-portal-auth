@@ -78,6 +78,7 @@ npm install @aaqu/node-red-dashboard-2-portal-auth
 
 ## Changelog
 
+- **1.0.3** (2026-03-12) — short to Fromcubes Portal authentication.
 - **1.0.2** (2026-03-12) — Renamed package to `@aaqu/node-red-dashboard-2-portal-auth`.
 - **1.0.1** (2026-03-12) — Renamed package to `@aaqu/node-red-dashboard-2-fromcubes-portal-auth`.
 - **1.0.0** (2026-03-12) — Complete rewrite. Replaced cookie-based auth endpoint approach with Nginx `X-Portal-*` headers. Removed `onSetup` hook and middleware/env configuration.
